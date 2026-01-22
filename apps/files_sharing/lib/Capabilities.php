@@ -77,6 +77,7 @@ class Capabilities implements ICapability {
 	 *             },
 	 *         },
 	 *         default_permissions?: int,
+	 *         include_share_in_edit?: bool,
 	 *         federation: array{
 	 *             outgoing: bool,
 	 *             incoming: bool,
@@ -159,6 +160,7 @@ class Capabilities implements ICapability {
 			$res['group']['enabled'] = $this->shareManager->allowGroupSharing();
 			$res['group']['expire_date']['enabled'] = true;
 			$res['default_permissions'] = (int)$this->config->getAppValue('core', 'shareapi_default_permissions', (string)Constants::PERMISSION_ALL);
+			$res['include_share_in_edit'] = $this->appConfig->getValueBool('core', ConfigLexicon::SHARE_INCLUDE_SHARE_IN_EDIT);
 		}
 
 		//Federated sharing

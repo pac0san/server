@@ -53,6 +53,7 @@ type FileSharingCapabilities = {
 		}
 	}
 	default_permissions: number
+	include_share_in_edit: boolean
 	federation: {
 		outgoing: boolean
 		incoming: boolean
@@ -101,6 +102,13 @@ export default class Config {
 	 */
 	get defaultPermissions(): number {
 		return this._capabilities.files_sharing?.default_permissions
+	}
+
+	/**
+	 * Should SHARE permission be included in "Allow editing" bundled permissions
+	 */
+	get includeShareInEdit(): boolean {
+		return this._capabilities.files_sharing?.include_share_in_edit === true
 	}
 
 	/**

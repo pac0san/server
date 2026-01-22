@@ -26,6 +26,7 @@ class ConfigLexicon implements ILexicon {
 	public const SHARE_LINK_PASSWORD_ENFORCED = 'shareapi_enforce_links_password';
 	public const SHARE_LINK_EXPIRE_DATE_DEFAULT = 'shareapi_default_expire_date';
 	public const SHARE_LINK_EXPIRE_DATE_ENFORCED = 'shareapi_enforce_expire_date';
+	public const SHARE_INCLUDE_SHARE_IN_EDIT = 'shareapi_include_share_in_edit';
 	public const USER_LANGUAGE = 'lang';
 	public const OCM_DISCOVERY_ENABLED = 'ocm_discovery_enabled';
 	public const OCM_INVITE_ACCEPT_DIALOG = 'ocm_invite_accept_dialog';
@@ -88,6 +89,7 @@ class ConfigLexicon implements ILexicon {
 				},
 				definition: 'Enforce expiration date for shares via link or mail'
 			),
+			new Entry(self::SHARE_INCLUDE_SHARE_IN_EDIT, ValueType::BOOL, false, 'Include reshare permission in "Allow editing" bundled permissions'),
 			new Entry(self::LASTCRON_TIMESTAMP, ValueType::INT, 0, 'timestamp of last cron execution'),
 			new Entry(self::OCM_DISCOVERY_ENABLED, ValueType::BOOL, true, 'enable/disable OCM'),
 			new Entry(self::OCM_INVITE_ACCEPT_DIALOG, ValueType::STRING, '', 'route to local invite accept dialog', note: 'set as empty string to disable feature'),

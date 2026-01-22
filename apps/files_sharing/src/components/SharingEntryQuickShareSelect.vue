@@ -42,6 +42,7 @@ import IconTune from 'vue-material-design-icons/Tune.vue'
 import {
 	ATOMIC_PERMISSIONS,
 	BUNDLED_PERMISSIONS,
+	getBundledPermissions,
 } from '../lib/SharePermissionsToolBox.js'
 import ShareDetails from '../mixins/ShareDetails.js'
 import SharesMixin from '../mixins/SharesMixin.js'
@@ -93,6 +94,10 @@ export default {
 			return t('files_sharing', 'Custom permissions')
 		},
 
+		bundledPermissions() {
+			return getBundledPermissions(this.config.includeShareInEdit)
+		},
+
 		preSelectedOption() {
 			// We remove the share permission for the comparison as it is not relevant for bundled permissions.
 			const permissionsWithoutShare = this.share.permissions & ~ATOMIC_PERMISSIONS.SHARE
@@ -140,14 +145,14 @@ export default {
 		dropDownPermissionValue() {
 			switch (this.selectedOption) {
 				case this.canEditText:
-					return this.isFolder ? BUNDLED_PERMISSIONS.ALL : BUNDLED_PERMISSIONS.ALL_FILE
+					return this.isFolder ? this.bundledPermissions.ALL : this.bundledPermissions.ALL_FILE
 				case this.fileDropText:
-					return BUNDLED_PERMISSIONS.FILE_DROP
+					return this.bundledPermissions.FILE_DROP
 				case this.customPermissionsText:
 					return 'custom'
 				case this.canViewText:
 				default:
-					return BUNDLED_PERMISSIONS.READ_ONLY
+					return this.bundledPermissions.READ_ONLY
 			}
 		},
 	},

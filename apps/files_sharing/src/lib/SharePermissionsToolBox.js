@@ -21,6 +21,23 @@ export const BUNDLED_PERMISSIONS = {
 }
 
 /**
+ * Get bundled permissions with optional SHARE permission for editing bundles.
+ *
+ * @param {boolean} includeShareInEdit - Whether to include SHARE permission in ALL and ALL_FILE bundles.
+ * @return {object}
+ */
+export function getBundledPermissions(includeShareInEdit = false) {
+	if (includeShareInEdit) {
+		return {
+			...BUNDLED_PERMISSIONS,
+			ALL: BUNDLED_PERMISSIONS.ALL | ATOMIC_PERMISSIONS.SHARE,
+			ALL_FILE: BUNDLED_PERMISSIONS.ALL_FILE | ATOMIC_PERMISSIONS.SHARE,
+		}
+	}
+	return BUNDLED_PERMISSIONS
+}
+
+/**
  * Return whether a given permissions set contains some permissions.
  *
  * @param {number} initialPermissionSet - the permissions set.

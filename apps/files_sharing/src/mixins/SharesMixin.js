@@ -13,6 +13,7 @@ import { fetchNode } from '../../../files/src/services/WebdavClient.ts'
 import {
 	ATOMIC_PERMISSIONS,
 	BUNDLED_PERMISSIONS,
+	getBundledPermissions,
 } from '../lib/SharePermissionsToolBox.js'
 import Share from '../models/Share.ts'
 import Config from '../services/ConfigService.ts'

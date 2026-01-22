@@ -332,6 +332,7 @@ import SidebarTabExternalActionLegacy from '../components/SidebarTabExternal/Sid
 import {
 	ATOMIC_PERMISSIONS,
 	BUNDLED_PERMISSIONS,
+	getBundledPermissions,
 	hasPermissions,
 } from '../lib/SharePermissionsToolBox.js'
 import ShareRequests from '../mixins/ShareRequests.js'
@@ -395,7 +396,6 @@ export default {
 			setCustomPermissions: false,
 			passwordError: false,
 			advancedSectionAccordionExpanded: false,
-			bundledPermissions: BUNDLED_PERMISSIONS,
 			isFirstComponentLoad: true,
 			test: false,
 			creating: false,
@@ -441,6 +441,10 @@ export default {
 					}
 				}
 			}
+		},
+
+		bundledPermissions() {
+			return getBundledPermissions(this.config.includeShareInEdit)
 		},
 
 		allPermissions() {
@@ -1022,10 +1026,12 @@ export default {
 			if (this.isNewShare) {
 				const defaultPermissions = this.config.defaultPermissions
 				const permissionsWithoutShare = defaultPermissions & ~ATOMIC_PERMISSIONS.SHARE
-				if (permissionsWithoutShare === BUNDLED_PERMISSIONS.READ_ONLY
-					|| permissionsWithoutShare === BUNDLED_PERMISSIONS.ALL
-					|| permissionsWithoutShare === BUNDLED_PERMISSIONS.ALL_FILE) {
-					this.sharingPermission = permissionsWithoutShare.toString()
+				if (permissionsWithoutShare === BUNDLED_PERMISSIONS.READ_ONLY) {
+					this.sharingPermission = this.bundledPermissions.READ_ONLY.toString()
+				} else if (permissionsWithoutShare === BUNDLED_PERMISSIONS.ALL) {
+					this.sharingPermission = this.bundledPermissions.ALL.toString()
+				} else if (permissionsWithoutShare === BUNDLED_PERMISSIONS.ALL_FILE) {
+					this.sharingPermission = this.bundledPermissions.ALL_FILE.toString()
 				} else {
 					this.sharingPermission = 'custom'
 					this.share.permissions = defaultPermissions
@@ -1075,9 +1081,9 @@ export default {
 				this.share.permissions = sharePermissionsSet
 			}
 
-			if (!this.isFolder && this.share.permissions === BUNDLED_PERMISSIONS.ALL) {
+			if (!this.isFolder && this.share.permissions === this.bundledPermissions.ALL) {
 				// It's not possible to create an existing file.
-				this.share.permissions = BUNDLED_PERMISSIONS.ALL_FILE
+				this.share.permissions = this.bundledPermissions.ALL_FILE
 			}
 			if (!this.writeNoteToRecipientIsChecked) {
 				this.share.note = ''
