@@ -106,6 +106,17 @@ interface IFunctionBuilder {
 	public function count($count = '', $alias = ''): IQueryFunction;
 
 	/**
+	 * Get the count of distinct entries.
+	 *
+	 * @param string|ILiteral|IParameter|IQueryFunction $count The input to be counted
+	 * @param string $alias Alias for the counter
+	 *
+	 * @return IQueryFunction
+	 * @since 34.0.0
+	 */
+	public function countDistinct(string|ILiteral|IParameter|IQueryFunction $count = '', string $alias = ''): IQueryFunction;
+
+	/**
 	 * @param string|ILiteral|IParameter|IQueryFunction $field The input to be measured
 	 * @param string $alias Alias for the length
 	 *

@@ -47,7 +47,7 @@ class ActiveUsers implements IMetricFamily {
 		];
 		foreach ($timeFrames as $label => $time) {
 			$qb = $this->connection->getQueryBuilder();
-			$result = $qb->select($qb->createFunction('COUNT(DISTINCT ' . $qb->getColumnName('uid') . ')'))
+			$result = $qb->select($qb->func()->countDistinct('uid'))
 				->from('authtoken')
 				->where($qb->expr()->gte('last_activity', $qb->createNamedParameter($time)))
 				->executeQuery();

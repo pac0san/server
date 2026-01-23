@@ -464,7 +464,7 @@ class Database extends ABackend implements
 		$this->fixDI();
 
 		$query = $this->dbConn->getQueryBuilder();
-		$query->select($query->createFunction('COUNT(DISTINCT ' . $query->getColumnName('uid') . ')'))
+		$query->select($query->func()->countDistinct('uid'))
 			->from('preferences', 'p')
 			->innerJoin('p', 'group_user', 'g', $query->expr()->eq('p.userid', 'g.uid'))
 			->where($query->expr()->eq('appid', $query->createNamedParameter('core')))

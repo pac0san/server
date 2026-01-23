@@ -10,6 +10,8 @@ use OC\DB\Connection;
 use OC\DB\QueryBuilder\QueryFunction;
 use OC\DB\QueryBuilder\QuoteHelper;
 use OCP\DB\QueryBuilder\IFunctionBuilder;
+use OCP\DB\QueryBuilder\ILiteral;
+use OCP\DB\QueryBuilder\IParameter;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\DB\QueryBuilder\IQueryFunction;
 use OCP\IDBConnection;
@@ -76,6 +78,12 @@ class FunctionBuilder implements IFunctionBuilder {
 		$alias = $alias ? (' AS ' . $this->helper->quoteColumnName($alias)) : '';
 		$quotedName = $count === '' ? '*' : $this->helper->quoteColumnName($count);
 		return new QueryFunction('COUNT(' . $quotedName . ')' . $alias);
+	}
+
+	public function countDistinct(string|ILiteral|IParameter|IQueryFunction $count = '', string $alias = ''): IQueryFunction {
+		$alias = !empty($alias) ? (' AS ' . $this->helper->quoteColumnName($alias)) : '';
+		$quotedName = $count === '' ? '*' : $this->helper->quoteColumnName($count);
+		return new QueryFunction('COUNT(DISTINCT ' . $quotedName . ')' . $alias);
 	}
 
 	public function octetLength($field, $alias = ''): IQueryFunction {

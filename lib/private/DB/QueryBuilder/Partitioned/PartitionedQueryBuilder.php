@@ -14,6 +14,7 @@ use OC\DB\QueryBuilder\Sharded\AutoIncrementHandler;
 use OC\DB\QueryBuilder\Sharded\ShardConnectionManager;
 use OC\DB\QueryBuilder\Sharded\ShardedQueryBuilder;
 use OCP\DB\IResult;
+use OCP\DB\QueryBuilder\IParameter;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\DB\QueryBuilder\IQueryFunction;
 use OCP\IDBConnection;
@@ -41,7 +42,7 @@ class PartitionedQueryBuilder extends ShardedQueryBuilder {
 	/** @var list<PartitionSplit> */
 	private array $partitions = [];
 
-	/** @var array{'select': string|array, 'alias': ?string}[] */
+	/** @var array{'select': string|IQueryFunction|IParameter, 'alias': ?string}[] */
 	private array $selects = [];
 	private ?PartitionSplit $mainPartition = null;
 	private bool $hasPositionalParameter = false;
@@ -75,7 +76,7 @@ class PartitionedQueryBuilder extends ShardedQueryBuilder {
 	}
 
 	// we need to save selects until we know all the table aliases
-	public function select(...$selects) {
+	public function select(...$selects): self {
 		if (count($selects) === 1 && is_array($selects[0])) {
 			$selects = $selects[0];
 		}
@@ -84,15 +85,13 @@ class PartitionedQueryBuilder extends ShardedQueryBuilder {
 		return $this;
 	}
 
-	public function addSelect(...$select) {
-		$select = array_map(function ($select) {
-			return ['select' => $select, 'alias' => null];
-		}, $select);
-		$this->selects = array_merge($this->selects, $select);
+	public function addSelect(...$selects): self {
+		$selects = array_map(static fn ($select) => ['select' => $select, 'alias' => null], $selects);
+		$this->selects = array_merge($this->selects, $selects);
 		return $this;
 	}
 
-	public function selectAlias($select, $alias) {
+	public function selectAlias(string|IQueryFunction|IParameter $select, string $alias): self {
 		$this->selects[] = ['select' => $select, 'alias' => $alias];
 		return $this;
 	}
@@ -101,9 +100,6 @@ class PartitionedQueryBuilder extends ShardedQueryBuilder {
 	 * Ensure that a column is being selected by the query
 	 *
 	 * This is mainly used to ensure that the returned rows from both sides of a partition contains the columns of the join predicate
-	 *
-	 * @param string|IQueryFunction $column
-	 * @return void
 	 */
 	private function ensureSelect(string|IQueryFunction $column, ?string $alias = null): void {
 		$checkColumn = $alias ?: $column;
@@ -190,14 +186,15 @@ class PartitionedQueryBuilder extends ShardedQueryBuilder {
 		return null;
 	}
 
-	public function from($from, $alias = null) {
+	public function from($from, $alias = null): self {
 		if (is_string($from) && $partition = $this->getPartition($from)) {
 			$this->mainPartition = $partition;
 			if ($alias) {
 				$this->mainPartition->addAlias($from, $alias);
 			}
 		}
-		return parent::from($from, $alias);
+		parent::from($from, $alias);
+		return $this;
 	}
 
 	public function innerJoin($fromAlias, $join, $alias, $condition = null): self {
@@ -281,11 +278,14 @@ class PartitionedQueryBuilder extends ShardedQueryBuilder {
 		} else {
 			// join within the main db or a partition
 			if ($joinMode === PartitionQuery::JOIN_MODE_INNER) {
-				return parent::innerJoin($fromAlias, $join, $alias, $condition);
+				parent::innerJoin($fromAlias, $join, $alias, $condition);
+				return $this;
 			} elseif ($joinMode === PartitionQuery::JOIN_MODE_LEFT) {
-				return parent::leftJoin($fromAlias, $join, $alias, $condition);
+				parent::leftJoin($fromAlias, $join, $alias, $condition);
+				return $this;
 			} elseif ($joinMode === PartitionQuery::JOIN_MODE_RIGHT) {
-				return parent::rightJoin($fromAlias, $join, $alias, $condition);
+				parent::rightJoin($fromAlias, $join, $alias, $condition);
+				return $this;
 			} else {
 				throw new \InvalidArgumentException("Invalid join mode: $joinMode");
 			}
@@ -333,11 +333,11 @@ class PartitionedQueryBuilder extends ShardedQueryBuilder {
 		return $partitionPredicates;
 	}
 
-	public function where(...$predicates) {
+	public function where(...$predicates): self {
 		return $this->andWhere(...$predicates);
 	}
 
-	public function andWhere(...$where) {
+	public function andWhere(...$where): self {
 		if ($where) {
 			foreach ($this->splitPredicatesByParts($where) as $alias => $predicates) {
 				if (isset($this->splitQueries[$alias])) {
@@ -380,30 +380,35 @@ class PartitionedQueryBuilder extends ShardedQueryBuilder {
 		return null;
 	}
 
-	public function update($update = null, $alias = null) {
-		return parent::update($update, $alias);
+	public function update(string $update, ?string $alias = null): self {
+		parent::update($update, $alias);
+		return $this;
 	}
 
-	public function insert($insert = null) {
-		return parent::insert($insert);
+	public function insert(string $insert): self {
+		parent::insert($insert);
+		return $this;
 	}
 
-	public function delete($delete = null, $alias = null) {
-		return parent::delete($delete, $alias);
+	public function delete(string $delete, ?string $alias = null): self {
+		parent::delete($delete, $alias);
+		return $this;
 	}
 
-	public function setMaxResults($maxResults) {
-		if ($maxResults > 0) {
-			$this->limit = (int)$maxResults;
+	public function setMaxResults(?int $maxResults): self {
+		if ($maxResults !== null && $maxResults > 0) {
+			$this->limit = $maxResults;
 		}
-		return parent::setMaxResults($maxResults);
+		parent::setMaxResults($maxResults);
+		return $this;
 	}
 
-	public function setFirstResult($firstResult) {
+	public function setFirstResult(int $firstResult): self {
 		if ($firstResult > 0) {
-			$this->offset = (int)$firstResult;
+			$this->offset = $firstResult;
 		}
-		return parent::setFirstResult($firstResult);
+		parent::setFirstResult($firstResult);
+		return $this;
 	}
 
 	public function executeQuery(?IDBConnection $connection = null): IResult {
@@ -444,7 +449,7 @@ class PartitionedQueryBuilder extends ShardedQueryBuilder {
 		return parent::executeStatement($connection);
 	}
 
-	public function getSQL() {
+	public function getSQL(): string {
 		$this->applySelects();
 		return parent::getSQL();
 	}
